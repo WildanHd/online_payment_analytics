@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: analytics
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: digital_transactions_db
+      MB_DB_PORT: 5432
+      MB_DB_USER: myuser
+      MB_DB_PASS: mypassword
+      MB_DB_HOST: postgres
+    depends_on:
+      - postgres
+    volumes:
+      - metabase_data:/metabase-data
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  metabase_data:
+
+networks:
+  app-network:
+    driver: bridge
